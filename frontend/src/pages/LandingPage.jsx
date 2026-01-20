@@ -25,6 +25,10 @@ function LandingPage() {
     navigate('/login')
   }
 
+  function onPlayGame() {
+    navigate('/game')
+  }
+
   return (
     <div className="landing-shell">
       <div className="landing-topbar">
@@ -69,6 +73,17 @@ function LandingPage() {
       <main className="landing-center" aria-live="polite">
         <h1 className="landing-title">Welcome to hackathon</h1>
         <p className="landing-subtitle">This is your Starting point of your hackathon.</p>
+        
+        {/* Play Game Button */}
+        <div className="landing-button-container">
+          <button 
+            className="btn btn-primary btn-lg" 
+            type="button" 
+            onClick={onPlayGame}
+          >
+            <i className="bi bi-play-circle" /> Play Game
+          </button>
+        </div>
       </main>
     </div>
   )

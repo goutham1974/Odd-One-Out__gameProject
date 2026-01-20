@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import LoginPage from './pages/LoginPage.jsx'
 import LandingPage from './pages/LandingPage.jsx'
+import GamePage from './pages/GamePage.jsx'
 import RequireAuth from './auth/RequireAuth.jsx'
 
 function App() {
@@ -13,6 +14,14 @@ function App() {
         element={
           <RequireAuth>
             <LandingPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/game"
+        element={
+          <RequireAuth>
+            <GamePage />
           </RequireAuth>
         }
       />

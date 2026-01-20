@@ -1,0 +1,150 @@
+.game-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.game-container h1 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.timer {
+  background-color: #f0f0f0;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.timer h2 {
+  margin: 0;
+  color: #e74c3c;
+  font-size: 24px;
+}
+
+.game-board {
+  display: flex;
+  gap: 40px;
+  justify-content: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.word-box {
+  width: 300px;
+  min-height: 400px;
+  padding: 20px;
+  border: 3px solid;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.blue-box {
+  background-color: #e3f2fd;
+  border-color: #1976d2;
+}
+
+.blue-box.dragging {
+  background-color: #bbdefb;
+}
+
+.red-box {
+  background-color: #ffebee;
+  border-color: #d32f2f;
+}
+
+.red-box.dragging {
+  background-color: #ffcdd2;
+}
+
+.word-box h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+.word-tile {
+  background-color: white;
+  border: 2px solid #666;
+  padding: 15px 25px;
+  margin: 10px 0;
+  border-radius: 6px;
+  cursor: move;
+  font-weight: bold;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  min-width: 150px;
+}
+
+.word-tile:hover {
+  background-color: #f9f9f9;
+  transform: scale(1.05);
+}
+
+.word-tile.dragging {
+  opacity: 0.5;
+  background-color: #e0e0e0;
+}
+
+.word-tile.selected {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+}
+
+.button-group {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+button {
+  padding: 12px 30px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-btn {
+  background-color: #4caf50;
+  color: white;
+  font-weight: bold;
+}
+
+.submit-btn:hover {
+  background-color: #45a049;
+  transform: scale(1.05);
+}
+
+.exit-btn {
+  background-color: #f44336;
+  color: white;
+  font-weight: bold;
+}
+
+.exit-btn:hover {
+  background-color: #da190b;
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .game-board {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .word-box {
+    width: 100%;
+    max-width: 350px;
+  }
+}
