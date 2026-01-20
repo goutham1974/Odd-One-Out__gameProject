@@ -1,3 +1,4 @@
+/* ✅ Full page background like Landing */
 .game-container {
   max-width: 900px;
   margin: 0 auto;
@@ -6,16 +7,64 @@
   font-family: Arial, sans-serif;
 }
 
-.game-container h1 {
-  color: #333;
-  margin-bottom: 20px;
+/* ✅ NEW: add background wrapper effect */
+body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #e3f2fd, #ffebee);
 }
 
+/* ✅ Card style like Landing */
+.game-container {
+  background: white;
+  border: 3px solid #1976d2;
+  border-radius: 16px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+  animation: landingFade 0.25s ease-in-out;
+}
+
+@keyframes landingFade {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.game-container h1 {
+  color: #1976d2;
+  margin-bottom: 20px;
+  font-size: 38px;
+  font-weight: bold;
+}
+
+/* ✅ Round + score improved */
+.round-text {
+  margin-top: 10px;
+  margin-bottom: 5px;
+  color: #333;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.score-text {
+  margin-top: 5px;
+  margin-bottom: 15px;
+  color: #1976d2;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Timer */
 .timer {
   background-color: #f0f0f0;
   padding: 15px;
-  border-radius: 8px;
+  border-radius: 12px;
   margin-bottom: 30px;
+  border: 2px solid #ddd;
 }
 
 .timer h2 {
@@ -24,7 +73,7 @@
   font-size: 24px;
 }
 
-/* ✅ added because JSX uses timer-warning class */
+/* ✅ timer warning */
 .timer-warning {
   color: #d32f2f;
   font-weight: bold;
@@ -40,6 +89,7 @@
   }
 }
 
+/* Game board layout */
 .game-board {
   display: flex;
   gap: 40px;
@@ -48,15 +98,17 @@
   flex-wrap: wrap;
 }
 
+/* Word Boxes */
 .word-box {
   width: 300px;
-  min-height: 400px;
-  padding: 20px;
+  min-height: 420px;
+  padding: 22px;
   border: 3px solid;
-  border-radius: 10px;
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
 .blue-box {
@@ -64,40 +116,45 @@
   border-color: #1976d2;
 }
 
-.blue-box.dragging {
-  background-color: #bbdefb;
-}
-
 .red-box {
   background-color: #ffebee;
   border-color: #d32f2f;
 }
 
-.red-box.dragging {
-  background-color: #ffcdd2;
-}
-
 .word-box h3 {
   margin-top: 0;
   color: #333;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: bold;
 }
 
+/* Words container */
+.words-container {
+  width: 100%;
+}
+
+/* placeholder */
 .placeholder {
-  color: #999;
+  color: #777;
   font-style: italic;
+  margin-top: 40px;
 }
 
+/* Word tile */
 .word-tile {
   background-color: white;
   border: 2px solid #666;
-  padding: 15px 25px;
-  margin: 10px 0;
-  border-radius: 6px;
-  cursor: move;
+  padding: 15px 22px;
+  margin: 12px 0;
+  border-radius: 10px;
+  cursor: grab;
   font-weight: bold;
   font-size: 16px;
   transition: all 0.2s ease;
-  min-width: 150px;
+  min-width: 160px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .word-tile:hover {
@@ -105,28 +162,25 @@
   transform: scale(1.05);
 }
 
-.word-tile.dragging {
-  opacity: 0.5;
-  background-color: #e0e0e0;
-}
-
+/* Selected word */
 .word-tile.selected {
   background-color: #fff3cd;
   border-color: #ffc107;
 }
 
+/* Buttons */
 .button-group {
   display: flex;
-  gap: 15px;
+  gap: 18px;
   justify-content: center;
   flex-wrap: wrap;
 }
 
 button {
-  padding: 12px 30px;
-  font-size: 16px;
+  padding: 14px 40px;
+  font-size: 17px;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
@@ -153,6 +207,15 @@ button {
   transform: scale(1.05);
 }
 
+/* X button */
+.remove-btn {
+  margin-left: 16px;
+  font-weight: bold;
+  color: #d32f2f;
+  cursor: pointer;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .game-board {
     flex-direction: column;
@@ -161,17 +224,11 @@ button {
 
   .word-box {
     width: 100%;
-    max-width: 350px;
+    max-width: 360px;
+  }
+
+  .game-container h1 {
+    font-size: 30px;
   }
 }
 
-/* ========================================================= */
-/* ✅ X mark spacing at end (no separate box) */
-/* ========================================================= */
-
-.remove-btn {
-  margin-left: 16px; /* ✅ spacing between word and X */
-  font-weight: bold;
-  color: #d32f2f; /* ✅ red theme */
-  cursor: pointer;
-}
