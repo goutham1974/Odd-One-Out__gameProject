@@ -1,10 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext.jsx";
 import "../styles/GamePage.css";
 
 const ROUND_TIME = 30;
 
 const GamePage = () => {
-  const [words, setWords] = useState([]); // ✅ now from backend
+  const navigate = useNavigate();
+  const { token } = useAuth();
+
+  const [words, setWords] = useState([]);
   const [selectedWord, setSelectedWord] = useState(null);
 
   const [timer, setTimer] = useState(ROUND_TIME);
@@ -12,12 +17,19 @@ const GamePage = () => {
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  // ✅ round_id from backend
   const [roundId, setRoundId] = useState(null);
+
+  // ✅ total score and rounds
+  const [totalScore, setTotalScore] = useState(
+    Number(localStorage.getItem("finalScore")) || 0
+  );
+  const [roundsPlayed, setRoundsPlayed] = useState(
+    Number(localStorage.getItem("roundsPlayed")) || 0
+  );
 
   const intervalRef = useRef(null);
 
-  // ✅ Fetch round from backend (MySQL)
+  // ✅ Fetch round from backend
   const fetchRound = async () => {
     try {
       const res = await fetch("http://127.0.0.1:8000/api/round/random");
@@ -28,14 +40,12 @@ const GamePage = () => {
         return;
       }
 
-      // data.tiles = [{text:"..."}, {text:"..."}]
       const roundWords = data.tiles.map((t) => t.text);
 
       setRoundId(data.round_id);
       setWords(roundWords);
       setSelectedWord(null);
 
-      // Reset timer and start
       setTimer(data.time_limit || ROUND_TIME);
       setGameStarted(true);
     } catch (err) {
@@ -44,7 +54,6 @@ const GamePage = () => {
     }
   };
 
-  // ✅ Load first round when component loads
   useEffect(() => {
     fetchRound();
   }, []);
@@ -58,6 +67,11 @@ const GamePage = () => {
         if (prev <= 1) {
           clearInterval(intervalRef.current);
           setGameStarted(false);
+
+          alert("⏰ Time up! Round ended.");
+
+          // End test automatically if no answer selected
+          endTest();
           return 0;
         }
         return prev - 1;
@@ -73,13 +87,11 @@ const GamePage = () => {
     e.dataTransfer.setData("text/plain", word);
   };
 
-  // Drag Over
   const handleDragOver = (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
   };
 
-  // Drop logic
   const handleDrop = (e) => {
     e.preventDefault();
     const droppedWord = e.dataTransfer.getData("text/plain");
@@ -88,7 +100,6 @@ const GamePage = () => {
     setWords((prevWords) => {
       let updated = prevWords.filter((w) => w !== droppedWord);
 
-      // If old selected exists, return it to blue
       if (selectedWord) {
         updated.push(selectedWord);
       }
@@ -97,12 +108,9 @@ const GamePage = () => {
     });
 
     setSelectedWord(droppedWord);
-
-    // show confirmation modal immediately after drop
     setShowConfirmModal(true);
   };
 
-  // Remove selected from red box
   const handleRemoveSelected = () => {
     if (!selectedWord) return;
     setWords((prev) => [...prev, selectedWord]);
@@ -110,7 +118,7 @@ const GamePage = () => {
     setShowConfirmModal(false);
   };
 
-  // Confirm submission (POST to backend)
+  // ✅ Submit answer to backend
   const handleConfirmSubmit = async () => {
     if (!selectedWord || !roundId) return;
 
@@ -120,22 +128,25 @@ const GamePage = () => {
     const timeTaken = ROUND_TIME - timer;
 
     const payload = {
-      round_id: roundId,          // ✅ backend expects round_id
-      selected_text: selectedWord, // ✅ backend expects selected_text
-      time_taken: timeTaken,       // ✅ backend expects time_taken
+      round_id: roundId,
+      selected_text: selectedWord,
+      time_taken: timeTaken,
     };
 
     try {
       const res = await fetch("http://127.0.0.1:8000/api/round/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ✅ IMPORTANT
+        },
         body: JSON.stringify(payload),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data?.message || "Submission failed");
+        alert(data?.message || data?.error || "Submission failed");
         return;
       }
 
@@ -145,7 +156,17 @@ const GamePage = () => {
         }`
       );
 
-      // ✅ Load next round automatically after submit
+      // ✅ update total score + rounds played
+      const newTotal = totalScore + Number(data.score_awarded || 0);
+      const newRounds = roundsPlayed + 1;
+
+      setTotalScore(newTotal);
+      setRoundsPlayed(newRounds);
+
+      localStorage.setItem("finalScore", newTotal);
+      localStorage.setItem("roundsPlayed", newRounds);
+
+      // ✅ Load next round automatically
       fetchRound();
     } catch (err) {
       console.error(err);
@@ -153,9 +174,15 @@ const GamePage = () => {
     }
   };
 
-  // close modal and allow reselect
   const handleChangeSelection = () => {
     setShowConfirmModal(false);
+  };
+
+  // ✅ END TEST → go to FinalResultPage
+  const endTest = () => {
+    localStorage.setItem("finalScore", totalScore);
+    localStorage.setItem("roundsPlayed", roundsPlayed);
+    navigate("/final-result");
   };
 
   return (
@@ -168,6 +195,11 @@ const GamePage = () => {
           Time:{" "}
           <span className={timer < 10 ? "timer-warning" : ""}>{timer}s</span>
         </h2>
+      </div>
+
+      {/* Score */}
+      <div style={{ marginBottom: "10px", fontWeight: "bold" }}>
+        Total Score: {totalScore} | Rounds Played: {roundsPlayed}
       </div>
 
       {/* Game Board */}
@@ -218,8 +250,9 @@ const GamePage = () => {
           Submit Answer
         </button>
 
-        <button className="exit-btn" onClick={() => alert("Exit Game")}>
-          Exit Game
+        {/* ✅ END TEST BUTTON */}
+        <button className="exit-btn" onClick={endTest}>
+          End Test
         </button>
       </div>
 

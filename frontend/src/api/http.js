@@ -1,36 +1,47 @@
-function resolveUrl(path) {
-  if (typeof path !== 'string' || !path) return path
-  if (/^https?:\/\//i.test(path)) return path
+export const API_BASE = "http://127.0.0.1:8000";
 
-  const baseUrl = import.meta.env.VITE_BACKEND_URL
-  if (!baseUrl) {
-    throw new Error('VITE_BACKEND_URL is required (example: http://127.0.0.1:8000)')
-  }
-
-  return new URL(path, baseUrl).toString()
+// get token from localStorage
+export function getToken() {
+  return localStorage.getItem("token");
 }
 
-export async function httpJson(path, { method = 'GET', token, body } = {}) {
-  const headers = { Accept: 'application/json' }
-  if (body !== undefined) headers['Content-Type'] = 'application/json'
-  if (token) headers.Authorization = `Bearer ${token}`
+// save token to localStorage
+export function setToken(token) {
+  if (token) localStorage.setItem("token", token);
+}
 
-  const res = await fetch(resolveUrl(path), {
-    method,
-    headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
-  })
+// remove token
+export function clearToken() {
+  localStorage.removeItem("token");
+}
 
-  const isJson = (res.headers.get('content-type') || '').includes('application/json')
-  const payload = isJson ? await res.json() : null
+export async function httpJson(path, options = {}) {
+  const token = options.token || getToken();
 
-  if (!res.ok) {
-    const message = payload?.error || payload?.message || `Request failed (${res.status})`
-    const error = new Error(message)
-    error.status = res.status
-    error.payload = payload
-    throw error
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: options.method || "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
+    },
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  });
+
+  let data = {};
+  try {
+    data = await res.json();
+  } catch (e) {
+    data = {};
   }
 
-  return payload
+  if (!res.ok) {
+    throw {
+      status: res.status,
+      message: data?.error || data?.message || "Request Failed",
+      payload: data,
+    };
+  }
+
+  return data;
 }

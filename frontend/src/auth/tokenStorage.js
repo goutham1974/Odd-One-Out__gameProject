@@ -1,13 +1,13 @@
-const TOKEN_STORAGE_KEY = 'auth_token'
+const KEY = "token";
 
 export function getAuthToken() {
-  return localStorage.getItem(TOKEN_STORAGE_KEY)
+  return localStorage.getItem(KEY);
 }
 
 export function setAuthToken(token) {
-  localStorage.setItem(TOKEN_STORAGE_KEY, token)
+  if (token) localStorage.setItem(KEY, token);
 }
 
 export function clearAuthToken() {
-  localStorage.removeItem(TOKEN_STORAGE_KEY)
+  localStorage.removeItem(KEY);
 }
