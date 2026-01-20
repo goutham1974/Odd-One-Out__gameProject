@@ -1,84 +1,108 @@
 .landing-wrapper {
-  width: 100%;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 35px 15px;
+  background: linear-gradient(135deg, #e3f2fd, #ffebee);
+  font-family: Arial, sans-serif;
 }
 
 .landing-center {
+  width: 760px;
+  max-width: 95%;
   text-align: center;
-  padding: 40px 20px;
+  background: white;
+  padding: 40px 35px;
+  border-radius: 16px;
+  border: 3px solid #1976d2;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+  animation: landingFade 0.25s ease-in-out;
 }
 
 .landing-title {
-  font-size: 48px;
+  font-size: 38px;
   font-weight: bold;
-  color: #1a1a1a;
-  margin: 0 0 20px 0;
-  letter-spacing: 1px;
+  margin: 0;
+  color: #1976d2;
 }
 
 .landing-subtitle {
+  margin-top: 10px;
+  margin-bottom: 25px;
+  font-size: 16px;
+  color: #444;
+}
+
+/* ✅ Instruction Card */
+.instruction-card {
+  text-align: left;
+  background: #f9f9f9;
+  padding: 22px 25px;
+  border-radius: 14px;
+  border: 2px solid #ddd;
+}
+
+.instruction-heading {
   font-size: 20px;
-  color: rgba(255, 255, 255, 0.85); /* visible on gradient */
-  margin: 0 0 70px 0;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  max-width: 520px;
-  margin-left: auto;
-  margin-right: auto
+  color: #333;
+  margin: 0;
+  margin-bottom: 10px;
+  margin-top: 15px;
 }
 
-/* Button Container with Extra Padding Down */
+.instruction-list {
+  margin: 0;
+  padding-left: 22px;
+  line-height: 1.7;
+  font-size: 16px;
+  color: #444;
+}
+
+.instruction-list li {
+  margin-bottom: 8px;
+}
+
+/* ✅ Play button area */
 .landing-button-container {
-  margin-top: 100px;
-  padding: 60px 20px 40px 20px;
+  margin-top: 25px;
+  display: flex;
+  justify-content: center;
 }
 
-.btn {
-  padding: 15px 40px;
+.play-btn {
+  padding: 14px 45px;
   font-size: 18px;
   font-weight: bold;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-block;
+  border-radius: 10px;
+  transition: 0.3s;
 }
 
-.btn-primary {
-  background-color: #1976d2;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #1565c0;
+.play-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 8px 16px rgba(25, 118, 210, 0.3);
 }
 
-.btn-primary:active {
-  transform: scale(0.98);
+@keyframes landingFade {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
-.btn-lg {
-  padding: 18px 50px;
-  font-size: 20px;
-}
+@media (max-width: 600px) {
+  .landing-center {
+    padding: 28px 20px;
+  }
 
-@media (max-width: 768px) {
   .landing-title {
-    font-size: 36px;
+    font-size: 30px;
   }
 
-  .landing-subtitle {
-    font-size: 16px;
-  }
-
-  .landing-button-container {
-    margin-top: 60px;
-    padding: 40px 20px 20px 20px;
+  .instruction-list {
+    font-size: 15px;
   }
 }
