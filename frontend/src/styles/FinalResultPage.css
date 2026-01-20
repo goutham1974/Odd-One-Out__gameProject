@@ -1,0 +1,102 @@
+.final-result-page {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #e3f2fd, #ffebee);
+  font-family: Arial, sans-serif;
+}
+
+.final-card {
+  width: 480px;
+  max-width: 92%;
+  background: white;
+  padding: 40px 30px;
+  border-radius: 14px;
+  border: 3px solid #1976d2;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  animation: popup 0.25s ease-in-out;
+}
+
+.final-title {
+  margin: 0;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.final-score-box {
+  background: #f7f7f7;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 25px;
+}
+
+.final-score-box p {
+  margin: 14px 0;
+  font-size: 18px;
+  display: flex;
+  justify-content: space-between;
+  color: #444;
+}
+
+.label {
+  font-weight: bold;
+  color: #333;
+}
+
+.value {
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.final-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.playagain-btn {
+  background-color: #4caf50;
+  color: white;
+  font-weight: bold;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.playagain-btn:hover {
+  background-color: #45a049;
+  transform: scale(1.05);
+}
+
+.home-btn {
+  background-color: #f44336;
+  color: white;
+  font-weight: bold;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.home-btn:hover {
+  background-color: #da190b;
+  transform: scale(1.05);
+}
+
+@keyframes popup {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

@@ -1,19 +1,43 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/GamePage.css";
 
 const ROUND_TIME = 30;
 
-const GamePage = () => {
-  const initialWords = ["Apple", "Banana", "Carrot", "Dog"];
+// ✅ Static dataset (later replace with DB words)
+const WORD_BANK = [
+  "Apple", "Banana", "Carrot", "Dog",
+  "Lion", "Tiger", "Elephant", "Car",
+  "Rose", "Lily", "Lotus", "Chair",
+  "Red", "Blue", "Green", "Table",
+  "Gold", "Silver", "Copper", "Pen",
+  "Delhi", "Mumbai", "Chennai", "Laptop",
+  "Cricket", "Football", "Hockey", "Pizza",
+  "Sun", "Moon", "Earth", "Bottle",
+];
 
-  const [words, setWords] = useState(initialWords);
+const getRandomWords = () => {
+  const shuffled = [...WORD_BANK].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, 4);
+};
+
+const GamePage = () => {
+  const navigate = useNavigate();
+
+  const [words, setWords] = useState(getRandomWords());
   const [selectedWord, setSelectedWord] = useState(null);
 
   const [timer, setTimer] = useState(ROUND_TIME);
   const [gameStarted, setGameStarted] = useState(true);
 
-  // ✅ modal state
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  // ✅ round count
+  const [round, setRound] = useState(1);
+
+  // ✅ only current question score (live display)
+  const [currentRoundScore, setCurrentRoundScore] = useState(0);
+
+  // ✅ total score (not displayed live, only used in final page)
+  const [totalScore, setTotalScore] = useState(0);
 
   const intervalRef = useRef(null);
 
@@ -25,6 +49,7 @@ const GamePage = () => {
       setTimer((prev) => {
         if (prev <= 1) {
           clearInterval(intervalRef.current);
+          setGameStarted(false);
           return 0;
         }
         return prev - 1;
@@ -46,7 +71,7 @@ const GamePage = () => {
     e.dataTransfer.dropEffect = "move";
   };
 
-  // ✅ Drop logic
+  // Drop logic
   const handleDrop = (e) => {
     e.preventDefault();
     const droppedWord = e.dataTransfer.getData("text/plain");
@@ -64,9 +89,6 @@ const GamePage = () => {
     });
 
     setSelectedWord(droppedWord);
-
-    // ✅ show confirmation modal immediately after drop
-    setShowConfirmModal(true);
   };
 
   // Remove selected from red box
@@ -74,58 +96,58 @@ const GamePage = () => {
     if (!selectedWord) return;
     setWords((prev) => [...prev, selectedWord]);
     setSelectedWord(null);
-    setShowConfirmModal(false);
   };
 
-  // ✅ Confirm submission
-  const handleConfirmSubmit = async () => {
-    if (!selectedWord) return;
+  // ✅ Submit Answer
+  const handleSubmitAnswer = () => {
+    if (!selectedWord) {
+      alert("Please select a word");
+      return;
+    }
 
-    setShowConfirmModal(false);
     setGameStarted(false);
 
-    const timeTaken = ROUND_TIME - timer;
-    const secondsSaved = timer;
+    // ✅ calculate score for ONLY this round
+    // +1 base + bonus 0.1 per second saved
+    const roundScore = +(1 + timer * 0.1).toFixed(2);
 
-    const payload = {
-      roundId: 1,
-      selectedWord,
-      timeTaken,
-      secondsSaved,
-    };
+    // ✅ update current round score display
+    setCurrentRoundScore(roundScore);
 
-    try {
-      const res = await fetch("http://127.0.0.1:8000/api/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    // ✅ update total score in background
+    setTotalScore((prev) => +(prev + roundScore).toFixed(2));
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data?.error || "Submission failed");
-        return;
-      }
-
-      // ✅ optional: show result modal later
-      alert(
-        `✅ Result: ${data.correct ? "Correct" : "Wrong"}\nPoints: ${data.totalPoints}`
-      );
-    } catch (err) {
-      console.error(err);
-      alert("Backend connection failed");
-    }
+    // ✅ next round in same page
+    setTimeout(() => {
+      setRound((prev) => prev + 1);
+      setWords(getRandomWords());
+      setSelectedWord(null);
+      setTimer(ROUND_TIME);
+      setGameStarted(true);
+      setCurrentRoundScore(0); // reset current round score display
+    }, 500);
   };
 
-  // ✅ close modal and allow reselect
-  const handleChangeSelection = () => {
-    setShowConfirmModal(false);
+  // ✅ Exit Game → Final Result Page
+  const handleExitGame = () => {
+    // ✅ store final results
+    localStorage.setItem("finalScore", totalScore);
+    localStorage.setItem("roundsPlayed", round);
+
+    navigate("/final-result");
   };
 
   return (
     <div className="game-container">
       <h1>Odd One Out Game</h1>
+
+      {/* ✅ Round */}
+      <h3 className="round-text">Round: {round}</h3>
+
+      {/* ✅ Current Round Score Only */}
+      <h3 className="score-text">
+        Current Question Score: {currentRoundScore}
+      </h3>
 
       {/* Timer */}
       <div className="timer">
@@ -163,7 +185,6 @@ const GamePage = () => {
           <h3>Drop Here</h3>
 
           {selectedWord ? (
-            // ✅ ONLY UPDATED THIS PART (X spacing, no button box)
             <div className="word-tile selected" onClick={handleRemoveSelected}>
               <span>{selectedWord}</span>
               <span className="remove-btn">✕</span>
@@ -178,36 +199,16 @@ const GamePage = () => {
       <div className="button-group">
         <button
           className="submit-btn"
-          onClick={() => setShowConfirmModal(true)}
+          onClick={handleSubmitAnswer}
           disabled={!selectedWord}
         >
           Submit Answer
         </button>
-        <button className="exit-btn" onClick={() => alert("Exit Game")}>
+
+        <button className="exit-btn" onClick={handleExitGame}>
           Exit Game
         </button>
       </div>
-
-      {/* ✅ Confirmation Modal (centered) */}
-      {showConfirmModal && (
-        <div className="modal-overlay">
-          <div className="modal-box">
-            <h2>Confirm Selection</h2>
-            <p>
-              You selected: <b>{selectedWord}</b>
-            </p>
-
-            <div className="modal-buttons">
-              <button className="modal-confirm" onClick={handleConfirmSubmit}>
-                Confirm
-              </button>
-              <button className="modal-change" onClick={handleChangeSelection}>
-                Change
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
