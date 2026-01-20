@@ -4,18 +4,50 @@ import "../styles/GamePage.css";
 const ROUND_TIME = 30;
 
 const GamePage = () => {
-  const initialWords = ["Apple", "Banana", "Carrot", "Dog"];
-
-  const [words, setWords] = useState(initialWords);
+  const [words, setWords] = useState([]); // ✅ now from backend
   const [selectedWord, setSelectedWord] = useState(null);
 
   const [timer, setTimer] = useState(ROUND_TIME);
-  const [gameStarted, setGameStarted] = useState(true);
+  const [gameStarted, setGameStarted] = useState(false);
 
-  // ✅ modal state
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
+  // ✅ round_id from backend
+  const [roundId, setRoundId] = useState(null);
+
   const intervalRef = useRef(null);
+
+  // ✅ Fetch round from backend (MySQL)
+  const fetchRound = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/round/random");
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data?.message || "Failed to load round");
+        return;
+      }
+
+      // data.tiles = [{text:"..."}, {text:"..."}]
+      const roundWords = data.tiles.map((t) => t.text);
+
+      setRoundId(data.round_id);
+      setWords(roundWords);
+      setSelectedWord(null);
+
+      // Reset timer and start
+      setTimer(data.time_limit || ROUND_TIME);
+      setGameStarted(true);
+    } catch (err) {
+      console.error(err);
+      alert("Backend connection failed (random round)");
+    }
+  };
+
+  // ✅ Load first round when component loads
+  useEffect(() => {
+    fetchRound();
+  }, []);
 
   // Countdown Timer
   useEffect(() => {
@@ -25,6 +57,7 @@ const GamePage = () => {
       setTimer((prev) => {
         if (prev <= 1) {
           clearInterval(intervalRef.current);
+          setGameStarted(false);
           return 0;
         }
         return prev - 1;
@@ -46,7 +79,7 @@ const GamePage = () => {
     e.dataTransfer.dropEffect = "move";
   };
 
-  // ✅ Drop logic
+  // Drop logic
   const handleDrop = (e) => {
     e.preventDefault();
     const droppedWord = e.dataTransfer.getData("text/plain");
@@ -65,7 +98,7 @@ const GamePage = () => {
 
     setSelectedWord(droppedWord);
 
-    // ✅ show confirmation modal immediately after drop
+    // show confirmation modal immediately after drop
     setShowConfirmModal(true);
   };
 
@@ -77,25 +110,23 @@ const GamePage = () => {
     setShowConfirmModal(false);
   };
 
-  // ✅ Confirm submission
+  // Confirm submission (POST to backend)
   const handleConfirmSubmit = async () => {
-    if (!selectedWord) return;
+    if (!selectedWord || !roundId) return;
 
     setShowConfirmModal(false);
     setGameStarted(false);
 
     const timeTaken = ROUND_TIME - timer;
-    const secondsSaved = timer;
 
     const payload = {
-      roundId: 1,
-      selectedWord,
-      timeTaken,
-      secondsSaved,
+      round_id: roundId,          // ✅ backend expects round_id
+      selected_text: selectedWord, // ✅ backend expects selected_text
+      time_taken: timeTaken,       // ✅ backend expects time_taken
     };
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/submit", {
+      const res = await fetch("http://127.0.0.1:8000/api/round/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -104,21 +135,25 @@ const GamePage = () => {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data?.error || "Submission failed");
+        alert(data?.message || "Submission failed");
         return;
       }
 
-      // ✅ optional: show result modal later
       alert(
-        `✅ Result: ${data.correct ? "Correct" : "Wrong"}\nPoints: ${data.totalPoints}`
+        `✅ Result: ${data.is_correct ? "Correct" : "Wrong"}\nPoints: ${
+          data.score_awarded
+        }`
       );
+
+      // ✅ Load next round automatically after submit
+      fetchRound();
     } catch (err) {
       console.error(err);
-      alert("Backend connection failed");
+      alert("Backend connection failed (submit)");
     }
   };
 
-  // ✅ close modal and allow reselect
+  // close modal and allow reselect
   const handleChangeSelection = () => {
     setShowConfirmModal(false);
   };
@@ -163,7 +198,6 @@ const GamePage = () => {
           <h3>Drop Here</h3>
 
           {selectedWord ? (
-            // ✅ ONLY UPDATED THIS PART (X spacing, no button box)
             <div className="word-tile selected" onClick={handleRemoveSelected}>
               <span>{selectedWord}</span>
               <span className="remove-btn">✕</span>
@@ -183,12 +217,13 @@ const GamePage = () => {
         >
           Submit Answer
         </button>
+
         <button className="exit-btn" onClick={() => alert("Exit Game")}>
           Exit Game
         </button>
       </div>
 
-      {/* ✅ Confirmation Modal (centered) */}
+      {/* Confirmation Modal */}
       {showConfirmModal && (
         <div className="modal-overlay">
           <div className="modal-box">
