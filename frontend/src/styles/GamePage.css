@@ -1,79 +1,87 @@
-/* ✅ Full page background like Landing */
-.game-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 40px 20px;
-  text-align: center;
-  font-family: Arial, sans-serif;
+/* ===============================
+   GAME PAGE WRAPPER (background + center)
+================================ */
+.page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 25px;
+  box-sizing: border-box;
+
+  /* ✅ smooth premium background */
+  background: radial-gradient(circle at top left, #f5f7ff, transparent 60%),
+              radial-gradient(circle at bottom right, #fff4f6, transparent 60%),
+              linear-gradient(135deg, #eef2ff, #fff1f2);
+  background-attachment: fixed;
 }
 
-/* ✅ NEW: add background wrapper effect */
+/* ✅ prevent corner black edges */
+html,
 body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(135deg, #e3f2fd, #ffebee);
+  min-height: 100%;
+  overflow-x: hidden;
 }
 
-/* ✅ Card style like Landing */
+/* ===============================
+   Game Container (Outer Box)
+================================ */
 .game-container {
-  background: white;
+  width: 100%;
+  max-width: 950px;
+  padding: 36px 32px;
+  text-align: center;
+
+  /* ✅ smooth glass look */
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+
   border: 3px solid #1976d2;
-  border-radius: 16px;
-  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
-  animation: landingFade 0.25s ease-in-out;
+  border-radius: 22px;
+
+  box-shadow: 0 16px 50px rgba(2, 6, 23, 0.18);
+  box-sizing: border-box;
 }
 
-@keyframes landingFade {
-  from {
-    transform: scale(0.92);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
+/* Title */
 .game-container h1 {
   color: #1976d2;
-  margin-bottom: 20px;
-  font-size: 38px;
-  font-weight: bold;
-}
-
-/* ✅ Round + score improved */
-.round-text {
-  margin-top: 10px;
-  margin-bottom: 5px;
-  color: #333;
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.score-text {
-  margin-top: 5px;
   margin-bottom: 15px;
-  color: #1976d2;
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 38px;
+  font-weight: 900;
 }
 
-/* Timer */
+/* ===============================
+   SCORE BAR
+================================ */
+.score-bar {
+  margin-bottom: 18px;
+  font-weight: 800;
+  font-size: 15px;
+  color: #0f172a;
+}
+
+/* ===============================
+   TIMER
+================================ */
 .timer {
-  background-color: #f0f0f0;
-  padding: 15px;
+  display: inline-block;
+  background-color: rgba(245, 245, 245, 0.95);
+  padding: 10px 24px;
   border-radius: 12px;
-  margin-bottom: 30px;
-  border: 2px solid #ddd;
+  margin-bottom: 15px;
+  border: 2px solid rgba(0, 0, 0, 0.08);
 }
 
 .timer h2 {
   margin: 0;
-  color: #e74c3c;
-  font-size: 24px;
+  font-size: 18px;
+  color: #e53935;
+  font-weight: 900;
 }
 
-/* ✅ timer warning */
 .timer-warning {
   color: #d32f2f;
   font-weight: bold;
@@ -89,146 +97,320 @@ body {
   }
 }
 
-/* Game board layout */
+/* ===============================
+   GAME BOARD
+================================ */
 .game-board {
   display: flex;
-  gap: 40px;
+  gap: 34px;
   justify-content: center;
-  margin-bottom: 40px;
+  margin: 22px 0 30px;
   flex-wrap: wrap;
 }
 
 /* Word Boxes */
 .word-box {
-  width: 300px;
+  width: 320px;
   min-height: 420px;
   padding: 22px;
   border: 3px solid;
-  border-radius: 14px;
+  border-radius: 18px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+
+  box-shadow: 0 10px 26px rgba(2, 6, 23, 0.12);
+  box-sizing: border-box;
 }
 
 .blue-box {
-  background-color: #e3f2fd;
+  background-color: rgba(227, 242, 253, 0.9);
   border-color: #1976d2;
 }
 
 .red-box {
-  background-color: #ffebee;
+  background-color: rgba(255, 235, 238, 0.9);
   border-color: #d32f2f;
 }
 
 .word-box h3 {
-  margin-top: 0;
-  color: #333;
-  margin-bottom: 20px;
+  margin: 0 0 18px;
   font-size: 18px;
-  font-weight: bold;
+  font-weight: 900;
+  color: #0f172a;
 }
 
-/* Words container */
+/* Words list */
 .words-container {
   width: 100%;
 }
 
-/* placeholder */
-.placeholder {
-  color: #777;
-  font-style: italic;
-  margin-top: 40px;
-}
-
-/* Word tile */
+/* Word tiles */
 .word-tile {
-  background-color: white;
-  border: 2px solid #666;
-  padding: 15px 22px;
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(2, 6, 23, 0.25);
+  padding: 12px 18px;
   margin: 12px 0;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: grab;
-  font-weight: bold;
-  font-size: 16px;
+  font-weight: 900;
+  font-size: 15px;
   transition: all 0.2s ease;
-  min-width: 160px;
   text-align: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  user-select: none;
+
+  box-shadow: 0 4px 14px rgba(2, 6, 23, 0.08);
+  box-sizing: border-box;
 }
 
 .word-tile:hover {
-  background-color: #f9f9f9;
-  transform: scale(1.05);
+  transform: translateY(-2px);
+  background-color: #ffffff;
 }
 
-/* Selected word */
-.word-tile.selected {
-  background-color: #fff3cd;
-  border-color: #ffc107;
+/* ===============================
+   DROP BOX CENTER AREA
+================================ */
+.drop-area {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-/* Buttons */
+/* Placeholder */
+.placeholder {
+  color: #64748b;
+  font-style: italic;
+  margin: 0;
+  font-weight: 700;
+}
+
+/* ✅ Selected tile in drop box */
+.drop-selected-tile {
+  width: 85%;
+  padding: 15px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.97);
+  border: 2px solid rgba(2, 6, 23, 0.12);
+  box-shadow: 0 14px 30px rgba(2, 6, 23, 0.18);
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Dropped word center */
+.drop-word {
+  flex: 1;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+/* X mark button */
+.drop-remove-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+
+  background: #ef5350;
+  color: white;
+  font-size: 22px;
+  font-weight: 900;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 10px 18px rgba(239, 83, 80, 0.35);
+  transition: 0.2s ease;
+}
+
+.drop-remove-btn:hover {
+  background: #e53935;
+  transform: scale(1.06);
+}
+
+/* ===============================
+   BUTTONS
+================================ */
 .button-group {
   display: flex;
-  gap: 18px;
   justify-content: center;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  margin-top: 10px;
 }
 
 button {
-  padding: 14px 40px;
-  font-size: 17px;
+  font-size: 16px;
   border: none;
-  border-radius: 10px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  font-weight: 900;
+  transition: all 0.25s ease;
 }
 
+/* ✅ Same size buttons */
+.submit-btn,
+.exit-btn {
+  width: 240px;
+  height: 52px;
+}
+
+/* Submit */
 .submit-btn {
-  background-color: #4caf50;
+  background-color: #7cb342;
   color: white;
-  font-weight: bold;
+  box-shadow: 0 10px 18px rgba(124, 179, 66, 0.35);
 }
 
 .submit-btn:hover {
-  background-color: #45a049;
-  transform: scale(1.05);
+  background-color: #689f38;
+  transform: translateY(-2px);
 }
 
+.submit-btn:disabled {
+  background-color: #cfcfcf;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Exit */
 .exit-btn {
-  background-color: #f44336;
+  background-color: #ef5350;
   color: white;
-  font-weight: bold;
+  box-shadow: 0 10px 18px rgba(239, 83, 80, 0.35);
 }
 
 .exit-btn:hover {
-  background-color: #da190b;
-  transform: scale(1.05);
+  background-color: #e53935;
+  transform: translateY(-2px);
 }
 
-/* X button */
-.remove-btn {
-  margin-left: 16px;
-  font-weight: bold;
+/* ===============================
+   MODAL POPUP (Result Modal)
+   ✅ Centered popup only
+================================ */
+
+/* overlay - transparent only */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  background: transparent;
+  z-index: 999;
+}
+
+/* ✅ popup fixed to center */
+.result-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  width: 360px;
+  max-width: 90%;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 18px;
+  padding: 24px 18px;
+  text-align: center;
+  box-shadow: 0 18px 60px rgba(2, 6, 23, 0.35);
+  animation: popIn 0.25s ease;
+  z-index: 1000;
+}
+
+@keyframes popIn {
+  0% {
+    transform: translate(-50%, -50%) scale(0.85);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+
+.result-modal h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.correct {
+  color: #2e7d32;
+}
+
+.wrong {
   color: #d32f2f;
-  cursor: pointer;
 }
 
-/* Responsive */
+.result-score {
+  margin-top: 12px;
+  font-size: 18px;
+  font-weight: 900;
+  color: #0f172a;
+}
+
+.continue-btn {
+  width: 100%;
+  margin-top: 18px;
+  padding: 13px 20px;
+  font-size: 16px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  background: #1976d2;
+  color: white;
+  font-weight: 900;
+  transition: 0.25s ease;
+}
+
+.continue-btn:hover {
+  background: #1565c0;
+  transform: translateY(-2px);
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
 @media (max-width: 768px) {
+  .game-container {
+    padding: 25px 18px;
+  }
+
   .game-board {
     flex-direction: column;
-    gap: 20px;
+    gap: 22px;
   }
 
   .word-box {
     width: 100%;
     max-width: 360px;
+    min-height: 380px;
   }
 
-  .game-container h1 {
-    font-size: 30px;
+  .submit-btn,
+  .exit-btn {
+    width: 180px;
+    height: 48px;
+  }
+
+  .drop-selected-tile {
+    width: 95%;
+  }
+
+  .drop-word {
+    font-size: 18px;
   }
 }
-

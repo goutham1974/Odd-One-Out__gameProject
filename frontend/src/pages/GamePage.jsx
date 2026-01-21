@@ -14,18 +14,22 @@ const GamePage = () => {
 
   const [timer, setTimer] = useState(ROUND_TIME);
   const [gameStarted, setGameStarted] = useState(false);
-
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-
   const [roundId, setRoundId] = useState(null);
 
-  // ✅ total score and rounds
+  // ✅ Total score + rounds played
   const [totalScore, setTotalScore] = useState(
     Number(localStorage.getItem("finalScore")) || 0
   );
   const [roundsPlayed, setRoundsPlayed] = useState(
     Number(localStorage.getItem("roundsPlayed")) || 0
   );
+
+  // ✅ Result Modal (only after submit)
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [resultData, setResultData] = useState({
+    correct: false,
+    score: 0,
+  });
 
   const intervalRef = useRef(null);
 
@@ -40,12 +44,9 @@ const GamePage = () => {
         return;
       }
 
-      const roundWords = data.tiles.map((t) => t.text);
-
       setRoundId(data.round_id);
-      setWords(roundWords);
+      setWords(data.tiles.map((t) => t.text));
       setSelectedWord(null);
-
       setTimer(data.time_limit || ROUND_TIME);
       setGameStarted(true);
     } catch (err) {
@@ -58,7 +59,7 @@ const GamePage = () => {
     fetchRound();
   }, []);
 
-  // Countdown Timer
+  // ✅ Timer Countdown
   useEffect(() => {
     if (!gameStarted) return;
 
@@ -67,10 +68,6 @@ const GamePage = () => {
         if (prev <= 1) {
           clearInterval(intervalRef.current);
           setGameStarted(false);
-
-          alert("⏰ Time up! Round ended.");
-
-          // End test automatically if no answer selected
           endTest();
           return 0;
         }
@@ -81,7 +78,7 @@ const GamePage = () => {
     return () => clearInterval(intervalRef.current);
   }, [gameStarted]);
 
-  // Handle Drag Start
+  // ✅ Drag start
   const handleDragStart = (e, word) => {
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", word);
@@ -89,9 +86,13 @@ const GamePage = () => {
 
   const handleDragOver = (e) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
   };
 
+  /**
+   * ✅ Drop logic:
+   * - remove dropped word from left list
+   * - if already selected, put old selection back into left list
+   */
   const handleDrop = (e) => {
     e.preventDefault();
     const droppedWord = e.dataTransfer.getData("text/plain");
@@ -100,6 +101,7 @@ const GamePage = () => {
     setWords((prevWords) => {
       let updated = prevWords.filter((w) => w !== droppedWord);
 
+      // if already selected, return it to the list
       if (selectedWord) {
         updated.push(selectedWord);
       }
@@ -108,56 +110,59 @@ const GamePage = () => {
     });
 
     setSelectedWord(droppedWord);
-    setShowConfirmModal(true);
   };
 
+  // ✅ Remove selected word using X mark
   const handleRemoveSelected = () => {
     if (!selectedWord) return;
-    setWords((prev) => [...prev, selectedWord]);
+
+    setWords((prev) => {
+      // prevent duplicates
+      if (prev.includes(selectedWord)) return prev;
+      return [...prev, selectedWord];
+    });
+
     setSelectedWord(null);
-    setShowConfirmModal(false);
   };
 
-  // ✅ Submit answer to backend
-  const handleConfirmSubmit = async () => {
+  // ✅ Submit answer
+  const handleSubmitAnswer = async () => {
     if (!selectedWord || !roundId) return;
 
-    setShowConfirmModal(false);
     setGameStarted(false);
-
-    const timeTaken = ROUND_TIME - timer;
-
-    const payload = {
-      round_id: roundId,
-      selected_text: selectedWord,
-      time_taken: timeTaken,
-    };
 
     try {
       const res = await fetch("http://127.0.0.1:8000/api/round/submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // ✅ IMPORTANT
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          round_id: roundId,
+          selected_text: selectedWord,
+          time_taken: ROUND_TIME - timer,
+        }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
         alert(data?.message || data?.error || "Submission failed");
+        setGameStarted(true);
         return;
       }
 
-      alert(
-        `✅ Result: ${data.is_correct ? "Correct" : "Wrong"}\nPoints: ${
-          data.score_awarded
-        }`
-      );
+      // ✅ Score logic: correct = score_awarded, wrong = 0
+      const earnedScore = data.is_correct ? Number(data.score_awarded || 0) : 0;
 
-      // ✅ update total score + rounds played
-      const newTotal = totalScore + Number(data.score_awarded || 0);
+      setResultData({
+        correct: data.is_correct,
+        score: earnedScore,
+      });
+
+      // update total
+      const newTotal = totalScore + earnedScore;
       const newRounds = roundsPlayed + 1;
 
       setTotalScore(newTotal);
@@ -166,19 +171,40 @@ const GamePage = () => {
       localStorage.setItem("finalScore", newTotal);
       localStorage.setItem("roundsPlayed", newRounds);
 
-      // ✅ Load next round automatically
-      fetchRound();
+      setShowResultModal(true);
     } catch (err) {
       console.error(err);
-      alert("Backend connection failed (submit)");
+      alert("Submit failed");
+      setGameStarted(true);
     }
   };
 
-  const handleChangeSelection = () => {
-    setShowConfirmModal(false);
+  /**
+   * ✅ Continue after result popup
+   * Correct -> next question
+   * Wrong -> same question again and restore word back to left list (so 4 options)
+   */
+  const handleContinue = () => {
+    setShowResultModal(false);
+
+    if (resultData.correct) {
+      fetchRound();
+    } else {
+      // ✅ WRONG -> restore removed option back to left list
+      if (selectedWord) {
+        setWords((prev) => {
+          if (prev.includes(selectedWord)) return prev;
+          return [...prev, selectedWord];
+        });
+      }
+
+      // reset selection
+      setSelectedWord(null);
+      setGameStarted(true);
+    }
   };
 
-  // ✅ END TEST → go to FinalResultPage
+  // ✅ Exit game
   const endTest = () => {
     localStorage.setItem("finalScore", totalScore);
     localStorage.setItem("roundsPlayed", roundsPlayed);
@@ -186,96 +212,104 @@ const GamePage = () => {
   };
 
   return (
-    <div className="game-container">
-      <h1>Odd One Out Game</h1>
+    <div className="page-wrapper">
+      <div className="game-container">
+        <h1>Odd One Out Game</h1>
 
-      {/* Timer */}
-      <div className="timer">
-        <h2>
-          Time:{" "}
-          <span className={timer < 10 ? "timer-warning" : ""}>{timer}s</span>
-        </h2>
-      </div>
-
-      {/* Score */}
-      <div style={{ marginBottom: "10px", fontWeight: "bold" }}>
-        Total Score: {totalScore} | Rounds Played: {roundsPlayed}
-      </div>
-
-      {/* Game Board */}
-      <div className="game-board">
-        {/* Blue Box */}
-        <div className="word-box blue-box">
-          <h3>Select the Odd One Out</h3>
-          <div className="words-container">
-            {words.map((word, index) => (
-              <div
-                key={index}
-                className="word-tile"
-                draggable
-                onDragStart={(e) => handleDragStart(e, word)}
-              >
-                {word}
-              </div>
-            ))}
-          </div>
+        {/* Timer */}
+        <div className="timer">
+          <h2>
+            Time:{" "}
+            <span className={timer < 10 ? "timer-warning" : ""}>
+              {timer}s
+            </span>
+          </h2>
         </div>
 
-        {/* Red Box */}
-        <div
-          className="word-box red-box"
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-        >
-          <h3>Drop Here</h3>
+        {/* Score */}
+        <div className="score-bar">
+          Total Score: {totalScore} | Rounds Played: {roundsPlayed}
+        </div>
 
-          {selectedWord ? (
-            <div className="word-tile selected" onClick={handleRemoveSelected}>
-              <span>{selectedWord}</span>
-              <span className="remove-btn">✕</span>
+        {/* Game Board */}
+        <div className="game-board">
+          {/* Blue Box */}
+          <div className="word-box blue-box">
+            <h3>Select the Odd One Out</h3>
+
+            <div className="words-container">
+              {words.map((word, index) => (
+                <div
+                  key={index}
+                  className="word-tile"
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, word)}
+                >
+                  {word}
+                </div>
+              ))}
             </div>
-          ) : (
-            <p className="placeholder">Drag a word here</p>
-          )}
-        </div>
-      </div>
+          </div>
 
-      {/* Buttons */}
-      <div className="button-group">
-        <button
-          className="submit-btn"
-          onClick={() => setShowConfirmModal(true)}
-          disabled={!selectedWord}
-        >
-          Submit Answer
-        </button>
+          {/* Red Box */}
+          <div
+            className="word-box red-box"
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
+            <h3>Drop Here</h3>
 
-        {/* ✅ END TEST BUTTON */}
-        <button className="exit-btn" onClick={endTest}>
-          End Test
-        </button>
-      </div>
-
-      {/* Confirmation Modal */}
-      {showConfirmModal && (
-        <div className="modal-overlay">
-          <div className="modal-box">
-            <h2>Confirm Selection</h2>
-            <p>
-              You selected: <b>{selectedWord}</b>
-            </p>
-
-            <div className="modal-buttons">
-              <button className="modal-confirm" onClick={handleConfirmSubmit}>
-                Confirm
-              </button>
-              <button className="modal-change" onClick={handleChangeSelection}>
-                Change
-              </button>
+            <div className="drop-area">
+              {selectedWord ? (
+                <div className="drop-selected-tile">
+                  <span className="drop-word">{selectedWord}</span>
+                  <button
+                    type="button"
+                    className="drop-remove-btn"
+                    onClick={handleRemoveSelected}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ) : (
+                <p className="placeholder">Drag a word here</p>
+              )}
             </div>
           </div>
         </div>
-      )}
+
+        {/* Buttons */}
+        <div className="button-group">
+          <button
+            className="submit-btn"
+            onClick={handleSubmitAnswer}
+            disabled={!selectedWord}
+          >
+            Submit Answer
+          </button>
+
+          <button className="exit-btn" onClick={endTest}>
+            Exit Game
+          </button>
+        </div>
+
+        {/* Result Popup */}
+        {showResultModal && (
+          <div className="modal-overlay">
+            <div className="result-modal">
+              <h2 className={resultData.correct ? "correct" : "wrong"}>
+                {resultData.correct ? "Correct ✓" : "Wrong ✕"}
+              </h2>
+
+              <p className="result-score">Score: {resultData.score}</p>
+
+              <button className="continue-btn" onClick={handleContinue}>
+                Continue
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
