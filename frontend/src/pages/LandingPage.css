@@ -1,25 +1,45 @@
+/* ===============================
+   Landing Wrapper
+================================ */
 .landing-wrapper {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 35px 15px;
+
+  padding: 20px 15px; /* ✅ reduced to avoid scroll */
+  box-sizing: border-box;
+
   background: linear-gradient(135deg, #e3f2fd, #ffebee);
   font-family: Arial, sans-serif;
+
+  overflow: hidden; /* ✅ prevent scroll */
 }
 
+/* ===============================
+   Landing Center Box
+================================ */
 .landing-center {
   width: 760px;
   max-width: 95%;
   text-align: center;
+
   background: white;
-  padding: 40px 35px;
+  padding: 32px 28px; /* ✅ reduced */
   border-radius: 16px;
+
   border: 3px solid #1976d2;
   box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2);
+
   animation: landingFade 0.25s ease-in-out;
+
+  position: relative; /* ✅ IMPORTANT for logout button */
+  box-sizing: border-box;
 }
 
+/* ===============================
+   Title + Subtitle
+================================ */
 .landing-title {
   font-size: 38px;
   font-weight: bold;
@@ -29,59 +49,95 @@
 
 .landing-subtitle {
   margin-top: 10px;
-  margin-bottom: 25px;
+  margin-bottom: 18px; /* ✅ reduced */
   font-size: 16px;
   color: #444;
 }
 
-/* ✅ Instruction Card */
+/* ===============================
+   Instruction Card
+================================ */
 .instruction-card {
   text-align: left;
   background: #f9f9f9;
-  padding: 22px 25px;
+
+  padding: 18px 20px; /* ✅ reduced */
   border-radius: 14px;
   border: 2px solid #ddd;
+
+  box-sizing: border-box;
 }
 
 .instruction-heading {
-  font-size: 20px;
+  font-size: 18px; /* ✅ reduced */
   color: #333;
-  margin: 0;
-  margin-bottom: 10px;
-  margin-top: 15px;
+  margin: 12px 0 8px;
 }
 
 .instruction-list {
   margin: 0;
-  padding-left: 22px;
-  line-height: 1.7;
-  font-size: 16px;
+  padding-left: 20px;
+  line-height: 1.6;
+  font-size: 15px; /* ✅ reduced */
   color: #444;
 }
 
 .instruction-list li {
-  margin-bottom: 8px;
+  margin-bottom: 6px; /* ✅ reduced */
 }
 
-/* ✅ Play button area */
+/* ===============================
+   Play Button
+================================ */
 .landing-button-container {
-  margin-top: 25px;
+  margin-top: 18px;
   display: flex;
   justify-content: center;
 }
 
 .play-btn {
-  padding: 14px 45px;
-  font-size: 18px;
+  padding: 12px 40px;
+  font-size: 17px;
   font-weight: bold;
   border-radius: 10px;
   transition: 0.3s;
+  border: none;
+  cursor: pointer;
 }
 
 .play-btn:hover {
   transform: scale(1.05);
 }
 
+/* ===============================
+   Logout Button
+================================ */
+.logout-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+
+  padding: 10px 16px;
+  border: none;
+  border-radius: 12px;
+
+  background: #ef5350;
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+
+  box-shadow: 0 8px 18px rgba(239, 83, 80, 0.35);
+  transition: 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: #e53935;
+  transform: translateY(-2px);
+}
+
+/* ===============================
+   Animation
+================================ */
 @keyframes landingFade {
   from {
     transform: scale(0.92);
@@ -93,16 +149,40 @@
   }
 }
 
+/* ===============================
+   Mobile Responsive
+================================ */
 @media (max-width: 600px) {
   .landing-center {
-    padding: 28px 20px;
+    padding: 24px 18px;
   }
 
   .landing-title {
-    font-size: 30px;
+    font-size: 28px;
+  }
+
+  .landing-subtitle {
+    font-size: 14px;
+  }
+
+  .instruction-heading {
+    font-size: 16px;
   }
 
   .instruction-list {
-    font-size: 15px;
+    font-size: 14px;
+  }
+
+  .play-btn {
+    width: 100%;
+    max-width: 220px;
+    padding: 12px 0;
+  }
+
+  .logout-btn {
+    top: 12px;
+    right: 12px;
+    padding: 8px 12px;
+    font-size: 14px;
   }
 }

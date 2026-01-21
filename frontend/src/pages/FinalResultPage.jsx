@@ -1,9 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext.jsx";
 import "../styles/FinalResultPage.css";
 
 const FinalResultPage = () => {
   const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   const finalScore = Number(localStorage.getItem("finalScore")) || 0;
   const roundsPlayed = Number(localStorage.getItem("roundsPlayed")) || 0;
@@ -18,8 +20,20 @@ const FinalResultPage = () => {
     navigate("/landing");
   };
 
+  const handleLogout = async () => {
+    await signOut();
+    localStorage.removeItem("finalScore");
+    localStorage.removeItem("roundsPlayed");
+    navigate("/login", { replace: true });
+  };
+
   return (
     <div className="final-result-page">
+      {/* ✅ Logout Button */}
+      <button className="logout-btn" onClick={handleLogout}>
+        Logout
+      </button>
+
       <div className="final-card">
         <h1 className="final-title">🎉 Game Over!</h1>
 

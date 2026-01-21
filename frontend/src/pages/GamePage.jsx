@@ -7,7 +7,7 @@ const ROUND_TIME = 30;
 
 const GamePage = () => {
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { token, signOut } = useAuth();
 
   const [words, setWords] = useState([]);
   const [selectedWord, setSelectedWord] = useState(null);
@@ -16,7 +16,6 @@ const GamePage = () => {
   const [gameStarted, setGameStarted] = useState(false);
   const [roundId, setRoundId] = useState(null);
 
-  // ✅ Total score + rounds played
   const [totalScore, setTotalScore] = useState(
     Number(localStorage.getItem("finalScore")) || 0
   );
@@ -24,7 +23,6 @@ const GamePage = () => {
     Number(localStorage.getItem("roundsPlayed")) || 0
   );
 
-  // ✅ Result Modal (only after submit)
   const [showResultModal, setShowResultModal] = useState(false);
   const [resultData, setResultData] = useState({
     correct: false,
@@ -32,6 +30,12 @@ const GamePage = () => {
   });
 
   const intervalRef = useRef(null);
+
+  // ✅ LOGOUT
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login", { replace: true });
+  };
 
   // ✅ Fetch round from backend
   const fetchRound = async () => {
@@ -78,7 +82,6 @@ const GamePage = () => {
     return () => clearInterval(intervalRef.current);
   }, [gameStarted]);
 
-  // ✅ Drag start
   const handleDragStart = (e, word) => {
     e.dataTransfer.effectAllowed = "move";
     e.dataTransfer.setData("text/plain", word);
@@ -88,11 +91,6 @@ const GamePage = () => {
     e.preventDefault();
   };
 
-  /**
-   * ✅ Drop logic:
-   * - remove dropped word from left list
-   * - if already selected, put old selection back into left list
-   */
   const handleDrop = (e) => {
     e.preventDefault();
     const droppedWord = e.dataTransfer.getData("text/plain");
@@ -101,7 +99,6 @@ const GamePage = () => {
     setWords((prevWords) => {
       let updated = prevWords.filter((w) => w !== droppedWord);
 
-      // if already selected, return it to the list
       if (selectedWord) {
         updated.push(selectedWord);
       }
@@ -112,12 +109,10 @@ const GamePage = () => {
     setSelectedWord(droppedWord);
   };
 
-  // ✅ Remove selected word using X mark
   const handleRemoveSelected = () => {
     if (!selectedWord) return;
 
     setWords((prev) => {
-      // prevent duplicates
       if (prev.includes(selectedWord)) return prev;
       return [...prev, selectedWord];
     });
@@ -161,7 +156,6 @@ const GamePage = () => {
         score: earnedScore,
       });
 
-      // update total
       const newTotal = totalScore + earnedScore;
       const newRounds = roundsPlayed + 1;
 
@@ -179,18 +173,12 @@ const GamePage = () => {
     }
   };
 
-  /**
-   * ✅ Continue after result popup
-   * Correct -> next question
-   * Wrong -> same question again and restore word back to left list (so 4 options)
-   */
   const handleContinue = () => {
     setShowResultModal(false);
 
     if (resultData.correct) {
       fetchRound();
     } else {
-      // ✅ WRONG -> restore removed option back to left list
       if (selectedWord) {
         setWords((prev) => {
           if (prev.includes(selectedWord)) return prev;
@@ -198,13 +186,11 @@ const GamePage = () => {
         });
       }
 
-      // reset selection
       setSelectedWord(null);
       setGameStarted(true);
     }
   };
 
-  // ✅ Exit game
   const endTest = () => {
     localStorage.setItem("finalScore", totalScore);
     localStorage.setItem("roundsPlayed", roundsPlayed);
@@ -214,6 +200,11 @@ const GamePage = () => {
   return (
     <div className="page-wrapper">
       <div className="game-container">
+        {/* ✅ Logout Button */}
+        <button className="logout-btn" onClick={handleLogout}>
+          Logout
+        </button>
+
         <h1>Odd One Out Game</h1>
 
         {/* Timer */}
