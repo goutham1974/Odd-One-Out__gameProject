@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext.jsx";
+import { API_BASE } from "../api/http.js";
 import "../styles/GamePage.css";
 
 const ROUND_TIME = 30;
@@ -40,7 +41,7 @@ const GamePage = () => {
   // ✅ Fetch round from backend
   const fetchRound = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/round/random");
+      const res = await fetch(`${API_BASE}/api/round/random`);
       const data = await res.json();
 
       if (!res.ok) {
@@ -127,7 +128,7 @@ const GamePage = () => {
     setGameStarted(false);
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/round/submit", {
+      const res = await fetch(`${API_BASE}/api/round/submit`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
