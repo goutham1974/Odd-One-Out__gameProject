@@ -1,0 +1,63 @@
+# Render Blueprint – Odd One Out Game
+# https://render.com/docs/blueprint-spec
+
+services:
+  # ── Django API ──────────────────────────────────────────
+  - type: web
+    name: odd-one-out-api
+    runtime: python
+    region: singapore     # closest to India
+    plan: free
+    rootDir: backend
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        sync: false        # set after first deploy (e.g. odd-one-out-api.onrender.com)
+      - key: CSRF_TRUSTED_ORIGINS
+        sync: false        # e.g. https://odd-one-out.onrender.com
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "3306"
+      - key: STUDENT_DB_NAME
+        sync: false
+      - key: STUDENT_DB_USER
+        sync: false
+      - key: STUDENT_DB_PASSWORD
+        sync: false
+      - key: STUDENT_DB_HOST
+        sync: false
+      - key: STUDENT_DB_PORT
+        value: "3306"
+
+  # ── React / Vite frontend ──────────────────────────────
+  - type: web
+    name: odd-one-out
+    runtime: static
+    region: singapore
+    plan: free
+    rootDir: frontend
+    buildCommand: "npm install && npm run build"
+    staticPublishPath: dist
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: no-cache
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE
+        sync: false        # e.g. https://odd-one-out-api.onrender.com
