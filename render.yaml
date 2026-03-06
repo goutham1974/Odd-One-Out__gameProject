@@ -30,16 +30,6 @@ services:
         sync: false
       - key: DB_PORT
         value: "3306"
-      - key: STUDENT_DB_NAME
-        sync: false
-      - key: STUDENT_DB_USER
-        sync: false
-      - key: STUDENT_DB_PASSWORD
-        sync: false
-      - key: STUDENT_DB_HOST
-        sync: false
-      - key: STUDENT_DB_PORT
-        value: "3306"
 
   # ── React / Vite frontend ──────────────────────────────
   - type: web

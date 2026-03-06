@@ -85,25 +85,13 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
-    },
-    'student': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('STUDENT_DB_NAME'),
-        'USER': os.getenv('STUDENT_DB_USER'),
-        'PASSWORD': os.getenv('STUDENT_DB_PASSWORD'),
-        'HOST': os.getenv('STUDENT_DB_HOST'),
-        'PORT': os.getenv('STUDENT_DB_PORT'),
+        'NAME': os.getenv('DB_NAME', 'team28'),
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+        'PORT': os.getenv('DB_PORT', '3306'),
     },
 }
-
-DATABASE_ROUTERS = [
-    'hackathon.db_router.HackathonDbRouter',
-]
 
 
 # Internationalization

@@ -250,7 +250,7 @@ def calculate_score(is_correct: bool, time_limit: int, time_taken: float):
 
 class ApiRandomRoundView(View):
     def get(self, request: HttpRequest) -> JsonResponse:
-        row = WordDataset.objects.using("student").order_by("?").first()
+        row = WordDataset.objects.order_by("?").first()
 
         if not row:
             return JsonResponse({"message": "No dataset rows found"}, status=404)
@@ -302,7 +302,7 @@ class ApiSubmitRoundView(View):
         player_id = session.user.id
 
         try:
-            row = WordDataset.objects.using("student").get(word_id=round_id)
+            row = WordDataset.objects.get(word_id=round_id)
         except WordDataset.DoesNotExist:
             return JsonResponse({"message": "Round not found"}, status=404)
 
@@ -315,7 +315,7 @@ class ApiSubmitRoundView(View):
         # save result
         try:
             now = timezone.now()
-            GameResult.objects.using("student").create(
+            GameResult.objects.create(
                 game_id=1,
                 game_name="Odd One Out",
                 player_id=player_id,
@@ -355,7 +355,7 @@ class ApiMyResultsView(View):
         player_id = session.user.id
 
         results = (
-            GameResult.objects.using("student")
+            GameResult.objects
             .filter(player_id=player_id)
             .order_by("-result_id")[:20]
         )
