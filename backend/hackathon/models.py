@@ -64,29 +64,6 @@ class AuthSession(models.Model):
         return self.expires_at > timezone.now()
 
 
-class OtpChallenge(models.Model):
-    identifier = models.CharField(max_length=255)
-    member = models.ForeignKey(
-        AppUserMember, on_delete=models.CASCADE, related_name="otp_challenges", null=True, blank=True
-    )
-
-    created_at = models.DateTimeField(default=timezone.now)
-    expires_at = models.DateTimeField()
-    consumed_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        indexes = [
-            models.Index(fields=["identifier", "expires_at"]),
-            models.Index(fields=["member", "expires_at"]),
-            models.Index(fields=["expires_at"]),
-        ]
-
-    def is_valid(self) -> bool:
-        if self.consumed_at is not None:
-            return False
-        return self.expires_at > timezone.now()
-
-
 # ✅ Dataset table (MySQL student DB)
 class WordDataset(models.Model):
     word_id = models.AutoField(primary_key=True)

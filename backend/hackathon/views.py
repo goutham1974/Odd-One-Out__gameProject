@@ -1,7 +1,6 @@
 import json
 import re
 import random
-from datetime import timedelta
 
 from django.http import HttpRequest, JsonResponse
 from django.db import transaction
@@ -10,15 +9,13 @@ from django.views import View
 
 from .auth import (
     create_session_token,
-    OtpDispatchError,
-    OtpVerifyError,
     get_session_times,
+    hash_password,
     hash_session_token,
-    dispatch_otp,
-    verify_otp_via_gateway,
     verify_password,
+    PBKDF2_ITERATIONS,
 )
-from .models import AppUser, AppUserMember, AuthSession, OtpChallenge, WordDataset, GameResult
+from .models import AppUser, AppUserMember, AuthSession, WordDataset, GameResult
 
 
 # -----------------------------
@@ -159,6 +156,71 @@ class ApiMeView(View):
                     "phone": session.member.phone,
                 },
             }
+        )
+
+
+class ApiRegisterView(View):
+    def post(self, request: HttpRequest) -> JsonResponse:
+        payload = _json_body(request)
+        name = (payload.get("name") or "").strip()
+        email = (payload.get("email") or "").strip()
+        phone_raw = (payload.get("phone") or "").strip()
+        password = (payload.get("password") or "").strip()
+
+        if not name or not password:
+            return JsonResponse({"error": "Name and password are required."}, status=400)
+        if not email and not phone_raw:
+            return JsonResponse({"error": "Email or phone number is required."}, status=400)
+        if len(password) < 4:
+            return JsonResponse({"error": "Password must be at least 4 characters."}, status=400)
+
+        phone = _normalize_phone(phone_raw) if phone_raw else ""
+
+        # Check for duplicate email or phone
+        if email and AppUserMember.objects.filter(email__iexact=email).exists():
+            return JsonResponse({"error": "Email already registered."}, status=409)
+        if phone and AppUserMember.objects.filter(phone=phone).exists():
+            return JsonResponse({"error": "Phone already registered."}, status=409)
+
+        salt_b64, password_hash_b64, iterations = hash_password(password, iterations=PBKDF2_ITERATIONS)
+
+        with transaction.atomic():
+            # Create a team-less user account
+            username = email or phone
+            user = AppUser.objects.create(
+                username=username,
+                email=email or None,
+                phone=phone or None,
+                password_salt_b64=salt_b64,
+                password_hash_b64=password_hash_b64,
+                password_iterations=iterations,
+                is_active=True,
+            )
+
+            member = AppUserMember.objects.create(
+                user=user,
+                name=name,
+                email=email or None,
+                phone=phone or "0000000000",
+            )
+
+            raw_token = create_session_token()
+            times = get_session_times()
+            AuthSession.objects.create(
+                user=user,
+                member=member,
+                token_hash=hash_session_token(raw_token),
+                created_at=times.created_at,
+                expires_at=times.expires_at,
+            )
+
+        return JsonResponse(
+            {
+                "token": raw_token,
+                "expires_at": times.expires_at.isoformat(),
+                "user": {"id": user.id, "username": user.username},
+            },
+            status=201,
         )
 
 

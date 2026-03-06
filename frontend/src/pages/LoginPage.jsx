@@ -1,30 +1,30 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext.jsx";
-import { apiOtpRequest } from "../api/authApi.js";
 import logo from "../assets/zdotapps.png";
-import emailIcon from "../assets/email_icon.png";
-import whatsappIcon from "../assets/whatsapp_icon.png";
 import "./LoginPage.css";
 
 function LoginPage() {
   const navigate = useNavigate();
-  const { signIn, signInWithOtp, status, user } = useAuth();
+  const { signIn, register, status, user } = useAuth();
 
+  const [mode, setMode] = useState("login"); // "login" | "register"
   const [passwordVisible, setPasswordVisible] = useState(false);
+
+  // Login fields
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [challengeId, setChallengeId] = useState(null);
-  const [teams, setTeams] = useState([]);
-  const [teamNo, setTeamNo] = useState("");
+
+  // Register fields
+  const [regName, setRegName] = useState("");
+  const [regEmail, setRegEmail] = useState("");
+  const [regPhone, setRegPhone] = useState("");
+  const [regPassword, setRegPassword] = useState("");
+  const [regConfirm, setRegConfirm] = useState("");
+
   const [errorMessage, setErrorMessage] = useState("");
   const [infoMessage, setInfoMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  const otpRefs = useRef([]);
-
-  const otpKey = useMemo(() => otp.join(""), [otp]);
 
   useEffect(() => {
     if (status === "ready" && user) {
@@ -32,87 +32,65 @@ function LoginPage() {
     }
   }, [navigate, status, user]);
 
-  function onOtpChange(index, rawValue) {
-    const nextValue = (rawValue || "").replace(/\s+/g, "").slice(0, 1);
-
-    setOtp((prev) => {
-      const copy = [...prev];
-      copy[index] = nextValue;
-      return copy;
-    });
-
-    if (nextValue && index < otpRefs.current.length - 1) {
-      otpRefs.current[index + 1]?.focus();
-    }
+  function switchMode(newMode) {
+    setMode(newMode);
+    setErrorMessage("");
+    setInfoMessage("");
   }
 
-  function onOtpKeyDown(index, e) {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus();
-    }
-  }
-
-  async function requestOtp(channel) {
+  async function onLoginSubmit(e) {
+    e.preventDefault();
     if (submitting) return;
 
     setErrorMessage("");
-    setInfoMessage("");
     setSubmitting(true);
 
     try {
-      const value = (username || "").trim();
-
-      const payload = {
-        channel,
-        phone: channel === "whatsapp" ? value : undefined,
-        email: channel === "email" ? value : undefined,
-        team_no: teamNo || undefined,
-      };
-
-      const data = await apiOtpRequest(payload);
-
-      setChallengeId(data.challenge_id);
-      setTeams([]);
-      setOtp(["", "", "", "", "", ""]);
-      setInfoMessage(
-        channel === "email"
-          ? "Key sent to your Email Id."
-          : "Key sent to your Mobile Number."
-      );
-      otpRefs.current[0]?.focus();
+      await signIn({ username, password });
+      navigate("/landing");
     } catch (err) {
-      if (err?.status === 409 && Array.isArray(err?.payload?.teams)) {
-        setTeams(err.payload.teams);
-      }
-
-      setChallengeId(null);
-      setOtp(["", "", "", "", "", ""]);
-      setErrorMessage(err?.message || "Unable to request key");
+      setErrorMessage(err?.message || "Login failed");
     } finally {
       setSubmitting(false);
     }
   }
 
-  async function onSubmit(e) {
+  async function onRegisterSubmit(e) {
     e.preventDefault();
     if (submitting) return;
 
     setErrorMessage("");
     setInfoMessage("");
+
+    if (!regName.trim()) {
+      setErrorMessage("Name is required.");
+      return;
+    }
+    if (!regEmail.trim() && !regPhone.trim()) {
+      setErrorMessage("Email or phone number is required.");
+      return;
+    }
+    if (regPassword.length < 4) {
+      setErrorMessage("Password must be at least 4 characters.");
+      return;
+    }
+    if (regPassword !== regConfirm) {
+      setErrorMessage("Passwords do not match.");
+      return;
+    }
+
     setSubmitting(true);
 
     try {
-      const key = otpKey;
-
-      if (challengeId && key.length === 6) {
-        await signInWithOtp({ challenge_id: challengeId, otp: key });
-      } else {
-        await signIn({ username, password });
-      }
-
+      await register({
+        name: regName.trim(),
+        email: regEmail.trim(),
+        phone: regPhone.trim(),
+        password: regPassword,
+      });
       navigate("/landing");
     } catch (err) {
-      setErrorMessage(err?.message || "Login failed");
+      setErrorMessage(err?.message || "Registration failed");
     } finally {
       setSubmitting(false);
     }
@@ -126,132 +104,157 @@ function LoginPage() {
             <img src={logo} alt="ZDrive" height="120" />
           </div>
 
-          <form id="loginForm" onSubmit={onSubmit}>
-            {errorMessage ? (
-              <div className="text-danger mb-2">{errorMessage}</div>
-            ) : null}
-
-            {infoMessage ? (
-              <div className="text-success mb-2">{infoMessage}</div>
-            ) : null}
-
-            <div className="field">
-              <label>Email Id or Mobile Number</label>
-              <input
-                type="text"
-                name="username"
-                autoComplete="username"
-                value={username}
-                onChange={(e) => {
-                  setUsername(e.target.value);
-                  setErrorMessage("");
-                  setInfoMessage("");
-                  setChallengeId(null);
-                  setTeams([]);
-                  setTeamNo("");
-                  setOtp(["", "", "", "", "", ""]);
-                }}
-              />
-            </div>
-
-            <div className="get-key">
-              <span>Get key from:</span>
-
-              <button
-                type="button"
-                className="key-icon"
-                onClick={() => requestOtp("email")}
-                disabled={submitting}
-              >
-                <img src={emailIcon} alt="Email" />
-              </button>
-
-              <button
-                type="button"
-                className="key-icon"
-                onClick={() => requestOtp("whatsapp")}
-                disabled={submitting}
-              >
-                <img src={whatsappIcon} alt="WhatsApp" />
-              </button>
-            </div>
-
-            {teams.length ? (
-              <div className="field mt-3">
-                <label>Team Number</label>
-                <select
-                  value={teamNo}
-                  onChange={(e) => {
-                    setTeamNo(e.target.value);
-                    setErrorMessage("");
-                    setInfoMessage("");
-                    setChallengeId(null);
-                    setOtp(["", "", "", "", "", ""]);
-                  }}
-                >
-                  <option value="">Select team</option>
-                  {teams.map((t) => (
-                    <option key={`team-${t.team_no}`} value={t.team_no}>
-                      Team {t.team_no}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : null}
-
-            <div className="field mt-3">
-              <label>Enter Key</label>
-              <input type="hidden" name="key" value={otpKey} />
-
-              <div className="otp-boxes">
-                {otp.map((value, index) => (
-                  <input
-                    key={`otp-${index}`}
-                    type="text"
-                    maxLength={1}
-                    value={value}
-                    onChange={(e) => onOtpChange(index, e.target.value)}
-                    onKeyDown={(e) => onOtpKeyDown(index, e)}
-                    ref={(el) => {
-                      otpRefs.current[index] = el;
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="or-text">(OR)</div>
-
-            <div className="field password">
-              <label>Password</label>
-              <input
-                type={passwordVisible ? "text" : "password"}
-                id="password"
-                name="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-
-              <i
-                className={`bi ${
-                  passwordVisible ? "bi-eye-slash" : "bi-eye"
-                } password-eye`}
-                id="togglePassword"
-                role="button"
-                tabIndex={0}
-                onClick={() => setPasswordVisible((v) => !v)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ")
-                    setPasswordVisible((v) => !v);
-                }}
-              />
-            </div>
-
-            <button className="login-btn" type="submit" disabled={submitting}>
+          {/* Tab switcher */}
+          <div className="auth-tabs">
+            <button
+              type="button"
+              className={`auth-tab ${mode === "login" ? "active" : ""}`}
+              onClick={() => switchMode("login")}
+            >
               Login
             </button>
-          </form>
+            <button
+              type="button"
+              className={`auth-tab ${mode === "register" ? "active" : ""}`}
+              onClick={() => switchMode("register")}
+            >
+              Register
+            </button>
+          </div>
+
+          {errorMessage ? (
+            <div className="text-danger mb-2">{errorMessage}</div>
+          ) : null}
+
+          {infoMessage ? (
+            <div className="text-success mb-2">{infoMessage}</div>
+          ) : null}
+
+          {/* ====== LOGIN FORM ====== */}
+          {mode === "login" && (
+            <form id="loginForm" onSubmit={onLoginSubmit}>
+              <div className="field">
+                <label>Email or Phone</label>
+                <input
+                  type="text"
+                  name="username"
+                  autoComplete="username"
+                  placeholder="Enter email or phone"
+                  value={username}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    setErrorMessage("");
+                  }}
+                />
+              </div>
+
+              <div className="field password">
+                <label>Password</label>
+                <input
+                  type={passwordVisible ? "text" : "password"}
+                  name="password"
+                  autoComplete="current-password"
+                  placeholder="Enter password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <i
+                  className={`bi ${passwordVisible ? "bi-eye-slash" : "bi-eye"} password-eye`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setPasswordVisible((v) => !v)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") setPasswordVisible((v) => !v);
+                  }}
+                />
+              </div>
+
+              <button className="login-btn" type="submit" disabled={submitting}>
+                {submitting ? "Logging in..." : "Login"}
+              </button>
+            </form>
+          )}
+
+          {/* ====== REGISTER FORM ====== */}
+          {mode === "register" && (
+            <form id="registerForm" onSubmit={onRegisterSubmit}>
+              <div className="field">
+                <label>Full Name</label>
+                <input
+                  type="text"
+                  placeholder="Enter your name"
+                  value={regName}
+                  onChange={(e) => {
+                    setRegName(e.target.value);
+                    setErrorMessage("");
+                  }}
+                />
+              </div>
+
+              <div className="field">
+                <label>Email</label>
+                <input
+                  type="email"
+                  placeholder="Enter email"
+                  autoComplete="email"
+                  value={regEmail}
+                  onChange={(e) => {
+                    setRegEmail(e.target.value);
+                    setErrorMessage("");
+                  }}
+                />
+              </div>
+
+              <div className="field">
+                <label>Phone Number</label>
+                <input
+                  type="tel"
+                  placeholder="Enter phone number"
+                  autoComplete="tel"
+                  value={regPhone}
+                  onChange={(e) => {
+                    setRegPhone(e.target.value);
+                    setErrorMessage("");
+                  }}
+                />
+              </div>
+
+              <div className="field password">
+                <label>Password</label>
+                <input
+                  type={passwordVisible ? "text" : "password"}
+                  placeholder="Create a password"
+                  autoComplete="new-password"
+                  value={regPassword}
+                  onChange={(e) => setRegPassword(e.target.value)}
+                />
+                <i
+                  className={`bi ${passwordVisible ? "bi-eye-slash" : "bi-eye"} password-eye`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setPasswordVisible((v) => !v)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") setPasswordVisible((v) => !v);
+                  }}
+                />
+              </div>
+
+              <div className="field">
+                <label>Confirm Password</label>
+                <input
+                  type="password"
+                  placeholder="Re-enter password"
+                  autoComplete="new-password"
+                  value={regConfirm}
+                  onChange={(e) => setRegConfirm(e.target.value)}
+                />
+              </div>
+
+              <button className="login-btn" type="submit" disabled={submitting}>
+                {submitting ? "Registering..." : "Register"}
+              </button>
+            </form>
+          )}
         </div>
       </div>
     </div>

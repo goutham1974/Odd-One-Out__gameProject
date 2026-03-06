@@ -1,18 +1,7 @@
 export const API_BASE = "http://127.0.0.1:8000";
 
-// get token from localStorage
-export function getToken() {
+function getToken() {
   return localStorage.getItem("token");
-}
-
-// save token to localStorage
-export function setToken(token) {
-  if (token) localStorage.setItem("token", token);
-}
-
-// remove token
-export function clearToken() {
-  localStorage.removeItem("token");
 }
 
 export async function httpJson(path, options = {}) {

@@ -2,6 +2,7 @@ from django.urls import path
 from .views import (
     HealthView,
     ApiLoginView,
+    ApiRegisterView,
     ApiLogoutView,
     ApiMeView,
     ApiRandomRoundView,
@@ -14,6 +15,7 @@ urlpatterns = [
 
     # Auth APIs
     path("api/login", ApiLoginView.as_view(), name="api_login"),
+    path("api/register", ApiRegisterView.as_view(), name="api_register"),
     path("api/me", ApiMeView.as_view(), name="api_me"),
     path("api/logout", ApiLogoutView.as_view(), name="api_logout"),
 

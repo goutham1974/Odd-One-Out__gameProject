@@ -7,6 +7,13 @@ export function apiLogin({ username, password }) {
   })
 }
 
+export function apiRegister({ name, email, phone, password }) {
+  return httpJson('/api/register', {
+    method: 'POST',
+    body: { name, email, phone, password },
+  })
+}
+
 export function apiMe({ token }) {
   return httpJson('/api/me', {
     method: 'GET',
@@ -18,19 +25,5 @@ export function apiLogout({ token }) {
   return httpJson('/api/logout', {
     method: 'POST',
     token,
-  })
-}
-
-export function apiOtpRequest({ channel, phone, email, team_no }) {
-  return httpJson('/api/otp/request', {
-    method: 'POST',
-    body: { channel, phone, email, team_no },
-  })
-}
-
-export function apiOtpVerify({ challenge_id, otp }) {
-  return httpJson('/api/otp/verify', {
-    method: 'POST',
-    body: { challenge_id, otp },
   })
 }

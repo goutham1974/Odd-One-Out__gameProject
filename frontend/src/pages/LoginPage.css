@@ -86,7 +86,41 @@ label {
 }
 
 /* -------------------------------
-   Get Key Section
+   Auth Tabs (Login / Register)
+-------------------------------- */
+.auth-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--light-3, rgba(255,255,255,0.15));
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 10px 0;
+  font-family: "Inter", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--light-3, rgba(255,255,255,0.45));
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  margin-bottom: -2px;
+}
+
+.auth-tab.active {
+  color: var(--primary, #3377ff);
+  border-bottom-color: var(--primary, #3377ff);
+}
+
+.auth-tab:hover:not(.active) {
+  color: var(--light-1, #fff);
+}
+
+/* -------------------------------
+   Get Key Section (removed)
 -------------------------------- */
 .get-key {
   display: flex;

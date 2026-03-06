@@ -175,20 +175,8 @@ const GamePage = () => {
 
   const handleContinue = () => {
     setShowResultModal(false);
-
-    if (resultData.correct) {
-      fetchRound();
-    } else {
-      if (selectedWord) {
-        setWords((prev) => {
-          if (prev.includes(selectedWord)) return prev;
-          return [...prev, selectedWord];
-        });
-      }
-
-      setSelectedWord(null);
-      setGameStarted(true);
-    }
+    // Always move to the next question (correct or wrong)
+    fetchRound();
   };
 
   const endTest = () => {

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { apiLogin, apiLogout, apiMe, apiOtpVerify } from "../api/authApi.js";
+import { apiLogin, apiRegister, apiLogout, apiMe } from "../api/authApi.js";
 import { clearAuthToken, getAuthToken, setAuthToken } from "./tokenStorage.js";
 
 const AuthContext = createContext(null);
@@ -57,9 +57,9 @@ export function AuthProvider({ children }) {
     [applySession, refresh]
   );
 
-  const signInWithOtp = useCallback(
-    async ({ challenge_id, otp }) => {
-      const data = await apiOtpVerify({ challenge_id, otp });
+  const register = useCallback(
+    async ({ name, email, phone, password }) => {
+      const data = await apiRegister({ name, email, phone, password });
       applySession(data);
       await refresh();
       return data;
@@ -91,11 +91,11 @@ export function AuthProvider({ children }) {
       member,
       status,
       signIn,
-      signInWithOtp,
+      register,
       signOut,
       refresh,
     }),
-    [token, user, member, status, signIn, signInWithOtp, signOut, refresh]
+    [token, user, member, status, signIn, register, signOut, refresh]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
