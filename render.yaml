@@ -35,7 +35,6 @@ services:
   - type: web
     name: odd-one-out
     runtime: static
-    region: singapore
     plan: free
     rootDir: frontend
     buildCommand: "npm install && npm run build"
