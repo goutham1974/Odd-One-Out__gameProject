@@ -1,0 +1,17 @@
+name: Keep Alive
+
+on:
+  schedule:
+    # Runs every 5 minutes
+    - cron: "*/5 * * * *"
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend
+        run: curl -sf --max-time 30 https://odd-one-out-api.onrender.com/ || echo "Backend unreachable"
+
+      - name: Ping frontend
+        run: curl -sf --max-time 30 https://odd-one-out.onrender.com/ || echo "Frontend unreachable"
