@@ -93,6 +93,10 @@ DATABASES = {
     },
 }
 
+# Require SSL for external MySQL (e.g. Aiven) in production
+if not DEBUG and DATABASES['default']['HOST'] not in ('127.0.0.1', 'localhost'):
+    DATABASES['default'].setdefault('OPTIONS', {})['ssl'] = {'ca': '/etc/ssl/certs/ca-certificates.crt'}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
