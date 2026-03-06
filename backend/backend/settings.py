@@ -95,10 +95,7 @@ DATABASES = {
 
 # Require SSL for external MySQL (e.g. Aiven) in production
 if not DEBUG and DATABASES['default']['HOST'] not in ('127.0.0.1', 'localhost'):
-    import ssl
-    DATABASES['default'].setdefault('OPTIONS', {})['ssl'] = {
-        'ssl_mode': 'REQUIRED',
-    }
+    DATABASES['default'].setdefault('OPTIONS', {})['ssl_mode'] = 'REQUIRED'
 
 
 # Internationalization
