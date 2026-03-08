@@ -97,6 +97,9 @@ DATABASES = {
 if not DEBUG and DATABASES['default']['HOST'] not in ('127.0.0.1', 'localhost'):
     DATABASES['default'].setdefault('OPTIONS', {})['ssl_mode'] = 'REQUIRED'
 
+# Keep DB connections alive to avoid repeated SSL handshakes on Aiven
+DATABASES['default']['CONN_MAX_AGE'] = 600
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -119,7 +122,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_DIRS = [BASE_DIR.parent / 'frontend']
 
-STORAGE = {
+STORAGES = {
     'staticfiles': {
         'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     },

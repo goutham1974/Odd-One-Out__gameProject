@@ -11,7 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping backend
-        run: curl -sf --max-time 30 https://odd-one-out-api.onrender.com/ || echo "Backend unreachable"
+        run: |
+          status=$(curl -sf -o /dev/null -w "%{http_code}" --max-time 60 https://odd-one-out-api.onrender.com/ || true)
+          echo "Backend HTTP status: $status"
+          if [ "$status" != "200" ]; then
+            echo "::warning::Backend returned HTTP $status"
+          fi
 
       - name: Ping frontend
-        run: curl -sf --max-time 30 https://odd-one-out.onrender.com/ || echo "Frontend unreachable"
+        run: |
+          status=$(curl -sf -o /dev/null -w "%{http_code}" --max-time 30 https://odd-one-out.onrender.com/ || true)
+          echo "Frontend HTTP status: $status"
+          if [ "$status" != "200" ]; then
+            echo "::warning::Frontend returned HTTP $status"
+          fi
