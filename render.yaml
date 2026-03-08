@@ -30,6 +30,8 @@ services:
         sync: false
       - key: DB_PORT
         sync: false
+      - key: DB_SSL
+        sync: false        # set to "true" if your MySQL provider requires SSL
 
   # ── React / Vite frontend ──────────────────────────────
   - type: web

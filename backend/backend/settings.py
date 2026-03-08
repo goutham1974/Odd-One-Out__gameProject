@@ -93,11 +93,11 @@ DATABASES = {
     },
 }
 
-# Require SSL for external MySQL (e.g. Aiven) in production
-if not DEBUG and DATABASES['default']['HOST'] not in ('127.0.0.1', 'localhost'):
+# Optional SSL for external MySQL providers that require it
+if os.getenv('DB_SSL', '').lower() in ('true', '1', 'yes'):
     DATABASES['default'].setdefault('OPTIONS', {})['ssl_mode'] = 'REQUIRED'
 
-# Keep DB connections alive to avoid repeated SSL handshakes on Aiven
+# Keep DB connections alive to avoid repeated connection overhead
 DATABASES['default']['CONN_MAX_AGE'] = 600
 
 
