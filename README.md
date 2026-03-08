@@ -2,7 +2,7 @@
 
 A fun interactive **Odd One Out** word game built with **React + Django**. Players identify the semantically odd word from a set of four, using a drag-and-drop interface with timer-based scoring.
 
-**Live Demo:** [https://odd-one-out.onrender.com.]
+**Live Demo:** [https://odd-one-out.onrender.com]
 
 ---
 
